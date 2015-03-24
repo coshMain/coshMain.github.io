@@ -1,6 +1,6 @@
 # Output Functions
 
-These functions are used to render things to the board, and to clear it.
+These functions are used to render things to the board.
 
 - `put` Append a pretty printed evaluation of any expression to the board
 - `peg` Append Markdown, a DOM node or a jQuery object to the board
