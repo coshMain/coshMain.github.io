@@ -9,16 +9,6 @@ lives in this file.
 This file's dependencies, `coffee`, `marked`, `pprint` and `smc` (Source Map
 Consumer), are loaded by `boot.js`.
 
----
-
-This file is intended to be easy to read and write for new programmers. If you
-contribute, please try and keep it simple.
-
-> You know you are working with clean code when each routine you read turns
-out to be pretty much what you expected. You can call it beautiful code when
-the code also makes it look like the language was made for the problem.
-<div class=quote-credit>Ward Cunningham</div>
-
 ## Initialise the Global Namespace
 
 This stuff is all exposed to users, and also used internally.
@@ -65,7 +55,7 @@ Set jQuery to not cache ajax requests, and disable the [Marked parser][1]'s
 
 These are all local variables pointing to elements, most wrapped by jQuery.
 
-    $html = jQuery "html"
+    $body = jQuery "body"
 
     $brand = jQuery "#brand"
     $board = jQuery "#board"
@@ -677,7 +667,7 @@ an element to the top of the board.
     scrollTop = ($element) ->
 
         animation = scrollTop: $element.offset().top - 27
-        $html.animate animation, duration: 150
+        $body.animate animation, duration: 150
 
 Make `editor.edit` available as the API `edit` function.
 
@@ -884,7 +874,7 @@ of handlers to it.
 
         formID = do uniqueID
 
-        peg.low """
+        page = """
             # GitHub Auth
             To publish or push to gists from cosh, you will need to provide
             your GitHub username and password.
@@ -904,6 +894,8 @@ of handlers to it.
 
             <button id=#{ formID }Delete>pop coshGitHubAuth</button>
             """
+
+        peg.low page, "page"
 
         jQuery("##{ formID }Delete").click ->
 
