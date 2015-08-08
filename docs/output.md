@@ -29,7 +29,7 @@ The `peg` function appends Markdown to the board.
 
 The `peg` function also accepts DOM nodes and jQuery objects.
 
-    peg $("<img>").attr height: 256, src: "/images/skull_stamp.png"
+    peg $("<img>").attr src: "/images/skull.png"
 
 Note that you can also pass `null` or `undefined` as the first argument,
 and it will be treated as an empty `div`. That can be useful...
