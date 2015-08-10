@@ -532,11 +532,13 @@ This API function opens a chit in the editor. It is also assigned to
         throw SignatureError "too many args" if arguments.length > 1
         throw TypeError "arg must be a key string or chit" if not target
 
-        if target.isString?() then item = get target
-        else if target.coshKey then item = get target.coshKey
-        else throw TypeError "arg must be a key string or chit"
+        if isFileChit target then item = target
+        else if target.isString?()
 
-        throw TypeError "target must be a file chit" unless item.coshKey
+            item = get target
+            throw TypeError "target must be a file chit" unless isFileChit item
+
+        else throw TypeError "arg must be a key string or chit"
 
         editor.currentFile = item
         $nameDiv.text editor.currentFile.coshKey
@@ -645,7 +647,7 @@ This handles keydown events outside of the slate and editor, making
 
     jQuery("body").bind "keydown", (event) ->
 
-        return unless (event.which is dotKey and modifiedKey event)
+        return unless (modifiedKey event) and (event.which is dotKey)
 
         do event.preventDefault
         do clock.scrollIntoView
@@ -679,7 +681,6 @@ internally to make *blocking* requests for remote resources.
     load = (path, output=undefined) ->
 
         jQuery.ajax
-
             url: path
             async: false
             success: (goods) -> output = goods
@@ -745,7 +746,7 @@ does nothing if the output is `undefined`. Undefined values are never put.
             .addClass "spaced #{ cssClass }"
 
 The `peg` and `peg.low` methods from [the API](/docs/output.md). These are
-both used directy, and by other functions, notably `put` and `put.low`, to
+both used directy, and by other functions, like `put` and `put.low`, to
 put markup strings, DOM nodes and jQuery arrays to the board.
 
     window.peg = (args...) ->
@@ -979,8 +980,7 @@ The `push` function from the [API](/docs/gists.md).
 
         data = description: hash.description, files: {}
 
-        data.files[hash.coshKey] =
-            filename: hash.coshKey, content: hash.content
+        data.files[hash.coshKey] = filename: hash.coshKey, content: hash.content
 
         [result, error] = gistUpdate "push", "/gists/#{ hash.gistID }", data
 
@@ -1126,8 +1126,8 @@ else `undefined`.
 
             do clock.scrollIntoView
 
-This function handles slate inputs. It creates the UI elements for the input
-and hidden element for the compiled JavaScript too.
+This function handles slate inputs. It creates the UI elements for the
+echoed input and the hidden element for the compiled JavaScript too.
 
     window.executeSlate = (source) ->
 
@@ -1225,28 +1225,13 @@ closing paren, are replaced with an underlined space.
 
         jQuery("<span class=error>").html lines.join "<br>"
 
-This takes an item and a map of line and column numbers, and creates the
-origin banner that goes at the bottom of each item in a traceback. It
-handles executed files and shell inputs differently.
-
-    parseOrigin = (item, line, column) ->
-
-        locationString = "[#{ line + 1 }:#{ column + 1 }]"
-
-        return "#{ item.origin } #{ locationString }" if item.shell
-
-        [key, date] = item.origin.split "|"
-
-        return "#{ key } #{ locationString } [#{ date }]"
-
 This is a helper that takes an error's origin, basically a path to a file or
 shell input, and returns a jQuery div. Every item in a rendered error has one
 of these divs beneath it.
 
     makeOriginDiv = (origin) ->
 
-        jQuery "<div>"
-            .html "<span class=trace-counter>#{ origin }</span><br><br>"
+        jQuery("<div>").html "<span class=trace-counter>#{ origin }</span><br><br>"
 
 This helper is for making a jQuery div for a JavaScript error item. Because
 the JavaScript errors generally do not have source code available, untill
@@ -1256,6 +1241,21 @@ source code.
     makeErrorMessageDiv = (message) ->
 
         jQuery("<xmp>").text(message).addClass "error-message unspaced"
+
+This takes an item, a line number and a column number, and creates the
+error-origin line that goes at the bottom of each item in a traceback.
+It handles executed files and shell inputs differently.
+
+    originString = (item, line, column) ->
+
+        locationString = "[#{ line + 1 }:#{ column + 1 }]"
+
+        return "#{ item.origin } #{ locationString }" if item.shell
+
+        [key, date] = item.origin.split "|"
+
+        return "#{ key } #{ locationString } [#{ date }]"
+
 
 The `window.onerror` function. This is where all runtime errors end up.
 
@@ -1274,7 +1274,7 @@ The `window.onerror` function. This is where all runtime errors end up.
                 csPosition = mapper.originalPositionFor jsPosition
                 csPosition = [csPosition.line-1, csPosition.column]
 
-                origin = parseOrigin item, csPosition...
+                origin = originString item, csPosition...
 
                 $cs = hilite item.source, csPosition...
                 $js = hilite item.native, trace.lineNumber-1, trace.column-1
@@ -1332,7 +1332,10 @@ This code is taken from [StackTrace-Parser][3] by `errwischt` on GitHub.
 
         gecko = /^(?:\s*(\S*)(?:\((.*?)\))?@)?((?:file|http|https).*?):(\d+)(?::(\d+))?\s*$/i
         node = /^\s*at (?:((?:\[object object\])?\S+(?: \[as \S+\])?) )?\(?(.*?):(\d+)(?::(\d+))?\)?\s*$/i
-        chrome = /^\s*at (?:(?:(?:Anonymous function)?|((?:\[object object\])?\S+(?: \[as \S+\])?)) )?\(?((?:file|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i
+        chrome = ///
+            ^\s*at (?:(?:(?:Anonymous function)?|((?:\[object object\])?\S+(?: \[as \S+\])?)) )?
+            \(?((?:file|http|https):.*?):(\d+)(?::(\d+))?\)?\s*$/i
+            ///
 
         for line in lines
 
