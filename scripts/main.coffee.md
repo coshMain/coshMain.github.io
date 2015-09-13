@@ -989,7 +989,7 @@ The `push` function from the [API](/docs/gists.md).
         toastr.success target.coshKey, "Pushed Chit"
         return gist2chit result
 
-The `publish` function from the [API](/docs/gists.md).
+The `clone` function from the [API](/docs/gists.md).
 
     window.clone = (gistID) ->
 
