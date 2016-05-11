@@ -1,8 +1,10 @@
 # Cosh Home Page
 
-Welcome to **CoffeeShop**, the one and only HTML5 shell.
+Welcome to **CoffeeShop**, the HTML5 shell.
 
-The best way to understand cosh is to explore it. Look through the
-[the docs][1] to get started.
+Look through the [the docs][1] for more information. You
+will need to read the [Keyboard Shortcuts][2] section to
+get started.
 
 [1]: /docs/front.md
+[2]: /docs/shortcuts.md
